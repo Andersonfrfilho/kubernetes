@@ -1,0 +1,81 @@
+##deployment -(cria)-> replicaset -(cria)-> pods
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-server ##nome do objeto (replicaset) kubernetes
+  labels:
+    app: nodejs-server
+spec:
+  selector: #seleciona as labels que vc quer utilizar
+    matchLabels:
+      app: nodejs-server #indica qual cara a gente vai fazer pra essa seleção de match labels tipo ele pega parte dos nomes gerados por isso não pode conter nada diferente dos nomes ja previstos
+  replicas: 2
+## configurações do pod
+  template:
+    metadata:
+      labels:
+        app: nodejs-server #precisa ter o label do metadata
+     
+    spec:
+      containers:
+        - name: nodejs-server
+          image: "andersonfrfilho/hello-nodejs:1.1.14"
+          resources:
+            requests: # minimo que a aplicação precisa pra rodar -> reservando estes recursos vai pegar do cluster
+              # vCpu -> 1000m (milicores) 500m === 0.5
+              cpu: "0.3"
+              # 20 megabytes de memoria
+              memory: 20Mi 
+            limits: #tente evitar que a soma de todos os limites ultrapasse as configurações do cluster
+              cpu: 500m
+              memory: 25Mi 
+
+            
+          startupProbe: ## retira o trafico para fora running
+            httpGet:
+              path: '/healthz'
+              port: 3000 # porta do service
+            periodSeconds: 3 ## period que ele vai bater na rota health
+            failureThreshold: 30 ## quantidade de falhas pra ele reiniciar o container
+          readinessProbe: ## retira o trafico para fora running
+            httpGet:
+              path: '/healthz'
+              port: 3000 # porta do service
+            periodSeconds: 3 ## period que ele vai bater na rota health
+            failureThreshold: 1 ## quantidade de falhas pra ele reiniciar o container
+            # initialDelaySeconds: 10
+          livenessProbe:
+            httpGet: ## recria o processo de cria
+              path: '/healthz'
+              port: 3000 # porta do service
+            periodSeconds: 5 ## period que ele vai bater na rota health
+            failureThreshold: 1 ## quantidade de falhas pra ele reiniciar o container
+            timeoutSeconds: 1 ## tempo de resposta da url, limite para resposta da url
+            successThreshold: 1 ## faz o numero de verificações na rota pra verificar se esta vivo conforme o segundos definidos no periodSeconds
+            # initialDelaySeconds: 10
+          # Trabalahndo com envs ##
+          ############################################
+          # env:
+          #   # primeira forma de se trabalhar com envs
+          #   - name: NAME
+          #     value: "Anderson"
+          #   - name: AGE
+          #     value: "27"
+          #   # segunda maneira de se trabalhar com variaveis de ambiente
+          #   - name: LAST_NAME
+          #     valueFrom:
+          #       configMapKeyRef:
+          #         name: nodejs-server-env # referenciar o metadata name do configMap
+          #         key: LAST_NAME
+          #   - name: ADDRESS
+          #     valueFrom:
+          #       configMapKeyRef:
+          #         name: nodejs-server-env # referenciar o metadata name do configMap
+          #         key: ADDRESS
+          ######################################
+          # terceira forma de se trabalhar com arquivos de env:
+          envFrom:
+            - configMapRef:
+                name: nodejs-server-env
+            - secretRef:
+                name: nodejs-server-secret-env

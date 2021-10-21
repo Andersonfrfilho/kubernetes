@@ -1,0 +1,22 @@
+##configurações da replicaset, por´pem modificações na versão da imagem não alteram o pod
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nodejs-server-name ##nome do objeto (replicaset) kubernetes
+  labels:
+    app: nodejs-server-label
+spec:
+  selector: #seleciona as labels que vc quer utilizar
+    matchLabels:
+      app: nodejs-server-label #precisa ter o label do metadata
+  replicas: 2
+## configurações do pod
+  template:
+    metadata:
+      labels:
+        app: nodejs-server-label #precisa ter o label do metadata
+    spec:
+      containers:
+        - name: nodejs-server-container
+          image: "andersonfrfilho/hello-nodejs:latest"
+

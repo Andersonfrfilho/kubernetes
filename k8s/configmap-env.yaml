@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodejs-server-env
+data:
+  LAST_NAME: "Fernandes"
+  ADDRESS: "Rua Ambrosina Veloso Ribeiro, 4631"
+  NAME: "Anderson"
+  AGE: "27"
+  # ERROR: "true"
+  STOP: "true"

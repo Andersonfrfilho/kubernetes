@@ -1,0 +1,15 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nodejs-server-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    name: nodejs-server
+    kind: Deployment
+  #minimo de replicas de maquinas nunca utilize 1
+  minReplicas: 2
+  #maximo de replicas que ele vai escalar
+  maxReplicas: 5
+  #porcentagem maxima que seu novo pod vai subir caso ele atinga o nivel de cpu utilizado
+  targetCPUUtilizationPercentage: 30
