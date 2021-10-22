@@ -88,8 +88,65 @@ obs:
 ```kubectl describe pod nomeDoPod```
 
 16 - kubectl --generator
-
+17 - instalar metricas no cluster
+  * 
+ver informações do cluster hpa
+```watch -n1 kubectl get hpa```
+ver informações de top pod
+```kubectl top pod nodejs-server-78676c7f4f-qmp7k```
 17 - HPA 
+baixe o servico:
+wget link do repositório
+https://github.com/kubernetes-sigs/metrics-server
+
+1 - vai baixa o seguinte arquivo:
+2 - components.yaml
+3 - renomeie para metrics-server
+4 - para executar local adicione no seguinte arquivo na parte que original:
+```yaml
+spec:
+  selector:
+    matchLabels:
+      k8s-app: metrics-server
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        k8s-app: metrics-server
+    spec:
+      containers:
+      - args:
+        - --cert-dir=/tmp
+        - --secure-port=443
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s
+```
+adicione a ultima linha:
+```yaml
+spec:
+  selector:
+    matchLabels:
+      k8s-app: metrics-server
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        k8s-app: metrics-server
+    spec:
+      containers:
+      - args:
+        - --cert-dir=/tmp
+        - --secure-port=443
+        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+        - --kubelet-use-node-status-port
+        - --metric-resolution=15s
+        - --kubelet-insecure-tls
+```
 teste de carga: utilizando o fortio
 //-it crie a image
 //--rm remove o container quando terminar
@@ -99,4 +156,60 @@ teste de carga: utilizando o fortio
 //-qps (queries per seconds) numeros de queries por segundo
 //-t tempo de execução do teste
 //-c números de conexões
+
+```sh
 kubectl run -it fortio --rm --image=fortio/fortio -- load -qps 1800 -t 120s -c 70 "http://nodejs-server-service:3000/healthz"
+```
+process for deploy in cloud service kubernetes
+```sh
+❯ kubectl apply -f k8s/deployment.yaml
+```
+response:
+```
+deployment.apps/nodejs-server created
+```
+```sh
+❯ kubectl apply -f k8s/service.yaml
+```
+response:
+```
+service/nodejs-server-service created
+```
+```sh
+❯ kubectl apply -f k8s/configmap-env.yaml
+```
+
+response:
+```
+configmap/nodejs-server-env created
+```
+```sh
+❯ kubectl apply -f k8s/secret.yaml
+```
+response:
+```
+secret/nodejs-server-secret-env created
+```
+```sh
+❯ kubectl apply -f k8s/metrics-server.yaml
+```
+response:
+```
+serviceaccount/metrics-server configured
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server configured
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader configured
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator configured
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server configured
+service/metrics-server configured
+deployment.apps/metrics-server created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io configured
+```
+
+```sh
+❯ kubectl apply -f hpa.yaml
+```
+response:
+```
+horizontalpodautoscaler.autoscaling/nodejs-server-hpa created
+```
