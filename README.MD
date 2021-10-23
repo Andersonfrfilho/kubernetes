@@ -1,6 +1,6 @@
 1 - criar cluster com o kind:
 ```bash 
-kind create cluster
+k3d cluster create mycluster
 ```
 2 - informações sobre o cluster pelo o kubectl
 ```bash
@@ -15,6 +15,7 @@ kubectl config get-clusters
 ```bash
 kubectl config use-context nome-do-cluster
 ```
+kubectl config unset contexts.NomeDoContexto
 
 3 - create a cluster with config and name
 ```bash
@@ -156,7 +157,7 @@ teste de carga: utilizando o fortio
 //-qps (queries per seconds) numeros de queries por segundo
 //-t tempo de execução do teste
 //-c números de conexões
-
+kubectl run -it fortio --rm --image=andersonfrfilho/hello-nodejs:1.1.15
 ```sh
 kubectl run -it fortio --rm --image=fortio/fortio -- load -qps 1800 -t 120s -c 70 "http://nodejs-server-service:3000/healthz"
 ```
@@ -212,4 +213,53 @@ apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io configured
 response:
 ```
 horizontalpodautoscaler.autoscaling/nodejs-server-hpa created
+```
+
+acessar app
+kubectl port-forward service/nodejs-server-service 3000:80
+navegador:
+http://localhost:3000/healthz
+
+get cluster
+```
+kubectl config get-contexts
+```
+set config cluster
+```
+kubectl config use-context k3d-cherry-go-cluster
+```
+
+Ingress:
+* install helm https://helm.sh/docs/intro/install/
+* install ingress https://kubernetes.github.io/ingress-nginx/deploy/#using-helm
+obs:use helm
+
+install cert-manager
+1 - Helm (https://cert-manager.io/docs/installation/helm/)
+
+INstall customDefinition
+- kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.crds.yaml
+
+## Name-Space
+```sh
+kubectl create namespace dev
+```
+```sh
+kubectl get po -n=dev
+```
+```sh
+kubectl get po -n=prod
+```
+
+criar contexto dentro do cluster
+
+```
+kubectl config current-context
+```
+```sh
+kubectl config set-context dev --namespace=dev --cluster=NomeDoCluster --user=kind-user
+```
+
+```sh
+kubectl config set-context prod --namespace=prod --cluster=NomeDoCluster --user=kind-user
 ```

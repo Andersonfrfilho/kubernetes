@@ -5,10 +5,10 @@ metadata:
 spec:
   selector: #filtra todos os pods que estaram incorporados neste serviço é oq ue estiver no matchLabel do deployment
     app: nodejs-server
-  type: LoadBalancer #NodePort ou ClusterIp
+  type: LoadBalancer #NodePort ou ClusterIp Quando vc tem o ingress ja não ah nescessidade de um loadbalance
   ports:
   - name:  nodejs-server-service
-    port: 3000 # porta do service, eu acesso o service por esta porta
+    port: 80 # porta do service, eu acesso o service por esta porta
     targetPort: 3000 # porta do container, o service acessa o container por essa porta
     protocol: TCP
 

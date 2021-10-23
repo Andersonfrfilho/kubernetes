@@ -6,6 +6,7 @@ metadata:
   labels:
     app: nodejs-server
 spec:
+  # namespace: dev
   selector: #seleciona as labels que vc quer utilizar
     matchLabels:
       app: nodejs-server #indica qual cara a gente vai fazer pra essa seleção de match labels tipo ele pega parte dos nomes gerados por isso não pode conter nada diferente dos nomes ja previstos
@@ -19,16 +20,16 @@ spec:
     spec:
       containers:
         - name: nodejs-server
-          image: "andersonfrfilho/hello-nodejs:1.1.14"
+          image: "andersonfrfilho/hello-nodejs:1.1.15"
           resources:
             requests: # minimo que a aplicação precisa pra rodar -> reservando estes recursos vai pegar do cluster
               # vCpu -> 1000m (milicores) 500m === 0.5
-              cpu: "0.3"
+              cpu: "200m"
               # 20 megabytes de memoria
-              memory: 20Mi 
+              memory: 200Mi 
             limits: #tente evitar que a soma de todos os limites ultrapasse as configurações do cluster
               cpu: 500m
-              memory: 25Mi 
+              memory: 250Mi 
 
             
           startupProbe: ## retira o trafico para fora running
@@ -52,7 +53,7 @@ spec:
             failureThreshold: 1 ## quantidade de falhas pra ele reiniciar o container
             timeoutSeconds: 1 ## tempo de resposta da url, limite para resposta da url
             successThreshold: 1 ## faz o numero de verificações na rota pra verificar se esta vivo conforme o segundos definidos no periodSeconds
-            # initialDelaySeconds: 10
+            initialDelaySeconds: 10
           # Trabalahndo com envs ##
           ############################################
           # env:
